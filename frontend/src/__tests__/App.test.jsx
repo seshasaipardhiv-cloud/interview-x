@@ -29,10 +29,10 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // 1. Candidate selection
-    expect(screen.getByText(/Initialize Candidate Session/i)).toBeInTheDocument();
+    expect(screen.getByText(/Select Candidate Profile/i)).toBeInTheDocument();
     
     // 2. Interview start
-    const startButton = screen.getByRole('button', { name: /launch session/i });
+    const startButton = screen.getByRole('button', { name: /initialize interview session/i });
     fireEvent.click(startButton);
 
     // Initial loading state
@@ -44,7 +44,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     });
     
     // Progress update
-    expect(screen.getByText(/Node 1 \/ 8\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Progress: Question 1 \/ 8\+/i)).toBeInTheDocument();
   });
 
   it('4/5/6. Submitting an answer, displaying next response, and progress updates', async () => {
@@ -67,7 +67,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // Start
-    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
     
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
@@ -87,7 +87,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     await waitFor(() => expect(screen.getByText('Second question')).toBeInTheDocument(), { timeout: 2500 }); // Wait past setTimeout in code
     
     // 6. Progress updates
-    expect(screen.getByText(/Node 2 \/ 8\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Progress: Question 2 \/ 8\+/i)).toBeInTheDocument();
     expect(screen.getByText('Core Concept').closest('.checklist-item')).toHaveClass('active');
   });
 
@@ -114,7 +114,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // Start
-    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
     // Submit answer to trigger completion
@@ -124,7 +124,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
 
     // 7. Final feedback shows up after loading delay
     await waitFor(() => {
-      expect(screen.getByText(/Executive Summary/i)).toBeInTheDocument();
+      expect(screen.getByText('OVERALL ASSESSMENT')).toBeInTheDocument();
       expect(screen.getByText('Great job!')).toBeInTheDocument();
     }, { timeout: 2000 });
   });
@@ -133,7 +133,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     api.postInterview.mockRejectedValueOnce(new Error('Network error'));
 
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Error:/i)).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
     const submitBtn = screen.getByRole('button', { name: /submit answer/i });
