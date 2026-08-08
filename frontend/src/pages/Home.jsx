@@ -5,14 +5,11 @@ export default function Home({ onStart }) {
   const [selectedCandidateId, setSelectedCandidateId] = useState('');
   const [candidates, setCandidates] = useState([]);
 
-  const TARGET_CANDIDATES = ["Sarah Johnson", "Ethan Brooks", "Mia Alvarez"];
-
   useEffect(() => {
     if (candidatesData.candidates) {
-      const filtered = candidatesData.candidates.filter(c => TARGET_CANDIDATES.includes(c.member.name));
-      setCandidates(filtered);
-      if (filtered.length > 0) {
-        setSelectedCandidateId(filtered[0].member.id);
+      setCandidates(candidatesData.candidates);
+      if (candidatesData.candidates.length > 0) {
+        setSelectedCandidateId(candidatesData.candidates[0].member.id);
       }
     }
   }, []);
