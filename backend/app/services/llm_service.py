@@ -79,5 +79,11 @@ class MockLLMService:
 
 def get_llm_service() -> LLMProvider:
     """Factory to get the configured LLM provider."""
+    from app.core.config import settings
+    
+    if settings.llm_api_key and settings.llm_model:
+        from app.services.openai_llm_service import OpenAILLMService
+        return OpenAILLMService(api_key=settings.llm_api_key, model=settings.llm_model)
+        
     # For hackathon/tests we return the Mock provider
     return MockLLMService()
