@@ -1,0 +1,373 @@
+[
+  {
+    "name": "add_episode",
+    "description": "Write text to the graph \u2014 graphiti extracts entities/edges, cogram annotates async. Returns task_id (~3s); pipeline runs ~15s in background.\n\n    When:\n      - User states a new fact, decision, preference, or context worth remembering.\n      - User says \"remember that...\" / \"don't forget...\" (use extract_intent=True).\n      - User states a commitment, choice, or recurring rule.\n    Skip when:\n      - Acknowledgments, greetings, thanks (\"ok\", \"got it\", \"thanks\").\n      - Pure questions with no statement of fact.\n      - You literally just wrote the same content earlier in this session.\n      - Generic chitchat with no recall value.\n    Inputs:\n      - content: any text (e.g. \"Siva prefers Postgres over MongoDB\").\n      - source_description: provenance tag (default \"claude-mcp\").\n      - group_id: short label from list_groups (e.g. \"default\", \"work\").\n      - extract_intent: False (default) runs the cheap path and may return `intent_suggestion`; True bills the team's intent_extractions cap and extracts decisions/preferences/cognitive patterns. Opt in for decisions, commitments, stated preferences, factual statements about the user, or explicit memory instructions.\n    Pair with:\n      - list_groups first if you don't know the group_id.\n      - get_episode_task(task_id, wait_seconds=20) BEFORE reading the graph \u2014 avoids stale reads while the async pipeline finishes.\n      - get_episode(uuid) to fetch the EPISODIC uuid (NOT the `episode_name` slug) before retract.\n    ",
+    "schema": {
+      "properties": {
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "source_description": {
+          "default": "claude-mcp",
+          "title": "Source Description",
+          "type": "string"
+        },
+        "group_id": {
+          "default": "default",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "extract_intent": {
+          "default": false,
+          "title": "Extract Intent",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content"
+      ],
+      "type": "object",
+      "title": "add_episodeArguments"
+    }
+  },
+  {
+    "name": "record_fact",
+    "description": "SPO wrapper around add_episode. Constructs '{subject} {predicate} {object}' and writes \u2014 locks edge structure better than free prose.\n\n    When:\n      - User states a clean structural fact (\"Siva builds cogram\", \"cogram uses Neo4j\").\n      - You want a single deterministic edge instead of letting the extractor guess from prose.\n    Skip when:\n      - Content is narrative or multi-clause \u2014 use add_episode instead.\n      - The same triple was already written earlier this session.\n      - It's a question, acknowledgment, or hedged statement (not a confident fact).\n    Inputs:\n      - subject: entity name (e.g. \"Siva\").\n      - predicate: relation; snake_case auto-converts to spaces (\"name_is\" -> \"name is\").\n      - object: target entity or value (e.g. \"Postgres\").\n      - group_id: short label from list_groups (e.g. \"default\").\n      - extract_intent: same semantics as add_episode \u2014 False is the cheap path, True bills the intent cap.\n    Pair with:\n      - list_groups first if group_id is unknown.\n      - get_episode_task(task_id, wait_seconds=20) BEFORE reading the graph \u2014 same async pipeline as add_episode.\n    ",
+    "schema": {
+      "properties": {
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "predicate": {
+          "title": "Predicate",
+          "type": "string"
+        },
+        "object": {
+          "title": "Object",
+          "type": "string"
+        },
+        "group_id": {
+          "default": "default",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "extract_intent": {
+          "default": false,
+          "title": "Extract Intent",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "subject",
+        "predicate",
+        "object"
+      ],
+      "type": "object",
+      "title": "record_factArguments"
+    }
+  },
+  {
+    "name": "retract",
+    "description": "Mark fact(s) as no-longer-believed. Filtered from search_graph; kept on disk for audit; bumps cache version so narratives re-generate on next read.\n\n    **By default, name-based retract is team-wide.** If the same entity name exists in multiple groups (e.g. \"Sarah Park\" in both `candidates` and `internal_team`), retract affects ALL of them. Pass `group_id=X` to scope to one group. The server will surface a `warning` field in the response when a name-based retract spanned >1 group.\n\n    `group_id` is ignored for uuid-based targets (edge uuid, episodic uuid) \u2014 those are naturally unique and don't need scoping.\n\n    When:\n      - User says \"that's wrong\", \"I never said that\", \"delete that\".\n      - You catch an annotator hallucination or a stale fact contradicted by newer data.\n      - User asks to forget a specific entity or episode.\n    Skip when:\n      - You only suspect a fact is wrong but haven't confirmed (read it first).\n      - Target is the friendly `episode_name` \"mcp_<ts>\" \u2014 that's a slug, not a uuid.\n      - User is correcting tone or wording, not the underlying belief \u2014 write a new episode instead.\n    Inputs:\n      - target: accepts (a) Entity name (substring), (b) edge uuid, or (c) EPISODIC uuid. NOT the `episode_name` slug from add_episode.\n      - reason: optional free-text audit note (e.g. \"user corrected on 2026-05-16\").\n      - group_id: OPTIONAL short label from list_groups. Scopes entity-name retraction to one group. Omit for team-wide retraction (you'll get a warning if it hit >1 group).\n    Pair with:\n      - get_entity_view(name, mode='edges') first to verify exactly what will be retracted.\n      - get_episode(uuid) first if you're retracting by EPISODIC uuid \u2014 confirms the body.\n      - list_groups when you want to scope but don't know the label.\n    ",
+    "schema": {
+      "properties": {
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "group_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group Id"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "type": "object",
+      "title": "retractArguments"
+    }
+  },
+  {
+    "name": "search_graph",
+    "description": "Semantic search across the user's memory. Profile-aware on subjective queries ('would I...', 'how do I feel...'). Filters retracted edges automatically.\n\n    **Default scope is EVERY group the user has data in.** Omit `group_id` unless you specifically want to scope to one bucket. Passing `group_id` restricts the search to that single bucket and hides everything else.\n\n    When:\n      - Fuzzy concept lookup (\"find anything related to X\").\n      - You don't have an exact entity name, only a topic or phrase.\n      - Subjective queries about the user (\"how do I feel about...\", \"would I...\").\n    Skip when:\n      - You already know the entity name \u2014 call get_entity_view(name) instead, it's cheaper and more direct.\n      - You ran the same query in this session and the graph hasn't changed.\n      - You need cross-decision pattern routing \u2014 use edges_by_pattern.\n    Inputs:\n      - query: any natural-language text (e.g. \"candidate sourcing rules\").\n      - limit: max edges to return (default 10).\n      - group_id: OPTIONAL short label from list_groups (e.g. \"work\", \"candidates\"). Omit to search ALL groups (recommended default). Pass a specific label only when you want to ignore everything outside that bucket.\n    Pair with:\n      - list_groups first if you genuinely want to scope to one group and don't know its label.\n      - get_episode(uuid) to fetch the full body of an interesting hit.\n      - get_entity_view(name, mode='edges') once a known entity name surfaces.\n      - get_director_profile(group_id) when the query is subjective and you want one group's reasoning model.\n    ",
+    "schema": {
+      "properties": {
+        "query": {
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "group_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group Id"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object",
+      "title": "search_graphArguments"
+    }
+  },
+  {
+    "name": "whoami",
+    "description": "Return the bearer's identity: team_id + team name, project_id + project name, member_id, role, scopes.\n\n    Use ONCE at the start of a session to confirm which account + which project + which permissions the current MCP connection has. Cheap (one parallel Supabase read for the human-readable names).\n\n    When:\n      - First call of a session if you (or the user) want to confirm \"which Breeth account am I on?\".\n      - Debugging permission errors \u2014 `scopes` tells you exactly what the bearer can do.\n      - Switching between multiple Breeth accounts and needing to verify which one is live.\n    Skip when:\n      - You already called whoami earlier this session and nothing about the connection has changed.\n    Returns:\n      - team_id / team_name: which organization this MCP is bound to\n      - project_id / project_name: which project within that team\n      - member_id: the account row id (for audit correlation)\n      - role: 'admin' | 'manager' | 'member'\n      - scopes: array of granted capabilities ('read' always implicit, 'write' / 'admin' explicit)\n    ",
+    "schema": {
+      "properties": {},
+      "type": "object",
+      "title": "whoamiArguments"
+    }
+  },
+  {
+    "name": "list_groups",
+    "description": "**First call of any session.** Returns each group_id with episode/entity/pattern/knot counts so you know what contexts exist before searching. Paginated. Scoped to the caller's team \u2014 solo individuals see their own lane; team members see shared + their individual lane; admins see everything in the team.\n\n    Groups are short labels like \"default\", \"work\", \"personal\" \u2014 NOT the full t_xxx_g_xxx form. If you call this and pass the result into search_graph, you can pass the short label as-is.\n\n    When:\n      - First call of a session \u2014 discovers which contexts exist.\n      - Before ANY group-scoped call (search_graph, get_director_profile, edges_by_pattern) when group_id is unknown.\n    Skip when:\n      - You already called list_groups earlier in this session \u2014 cache the result, don't re-list every turn.\n      - You already know the group_id (e.g. user said \"save to work\").\n    Inputs:\n      - query: case-insensitive substring filter (e.g. \"work\").\n      - limit: max groups to return (cap 200, default 20).\n      - offset: pagination cursor.\n    Pair with:\n      - get_director_profile(group_id=X) to get the meta-narrative before searching.\n      - search_graph(query, group_id=X) once you've picked a group.\n    ",
+    "schema": {
+      "properties": {
+        "query": {
+          "default": "",
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 20,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "title": "list_groupsArguments"
+    }
+  },
+  {
+    "name": "list_cognitive_patterns",
+    "description": "Discover distinct cognitive_pattern labels with edge counts. Sorted most-reinforced-first. Scoped to the caller's team.\n\n    When:\n      - You want to know what thinking styles / recurring patterns exist before drilling into one.\n      - Building a high-level map of the user's reasoning before making a recommendation.\n    Skip when:\n      - You already know the exact pattern name \u2014 call edges_by_pattern directly.\n      - You called list_cognitive_patterns earlier this session \u2014 cache it.\n      - You need raw edges or episodes \u2014 use search_graph or get_entity_view.\n    Inputs:\n      - query: substring filter (e.g. \"legal\", \"hiring\").\n      - limit: max patterns (cap 200, default 20).\n      - offset: pagination cursor.\n    Pair with:\n      - edges_by_pattern(pattern_name) for the actual reinforcing-edge evidence behind each pattern.\n      - get_director_profile to see top patterns already ranked within a group.\n    ",
+    "schema": {
+      "properties": {
+        "query": {
+          "default": "",
+          "title": "Query",
+          "type": "string"
+        },
+        "limit": {
+          "default": 20,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "title": "Offset",
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "title": "list_cognitive_patternsArguments"
+    }
+  },
+  {
+    "name": "edges_by_pattern",
+    "description": "**Cross-decision routing primitive.** Every edge whose cognitive_pattern matches, with intent_meta + director_vision intact. Substring match. Scoped to the caller's team.\n\n    When:\n      - About to make a constrained decision and want every prior decision under the same thinking style.\n      - Turning \"user rejected X once\" into \"user has a recurring rule\".\n      - Building a justified recommendation that cites past pattern instances.\n    Skip when:\n      - You don't know the pattern name yet \u2014 run list_cognitive_patterns first.\n      - You want fuzzy semantic matching across all edges \u2014 use search_graph.\n      - You only need a single entity's edges \u2014 use get_entity_view(name, mode='edges').\n    Inputs:\n      - pattern: substring of a cognitive_pattern label (see list_cognitive_patterns for exact names).\n      - limit: max edges to return (default 25).\n    Pair with:\n      - list_cognitive_patterns first to discover exact names.\n      - get_episode(uuid) on a surfaced edge's source_episode_uuid to inspect the raw context.\n    ",
+    "schema": {
+      "properties": {
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "limit": {
+          "default": 25,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "pattern"
+      ],
+      "type": "object",
+      "title": "edges_by_patternArguments"
+    }
+  },
+  {
+    "name": "get_entity_view",
+    "description": "**Primary 'tell me about X' tool.** Three layers of view selectable via `mode`. Substring match on entity_name (up to 5 entities for narrative; up to `limit` edges/episodes). Scoped to the caller's team.\n\n    When:\n      - You have a known entity name (person, company, project) and want context.\n      - mode='narrative' for compressed summary, 'edges' for raw provenance, 'episodes' for uuids needed before retract, 'all' for everything.\n    Skip when:\n      - You don't have an entity name yet \u2014 use search_graph for fuzzy lookup first.\n      - You need pattern-level routing across many entities \u2014 use edges_by_pattern.\n    Inputs:\n      - entity_name: substring (e.g. \"Siva\", \"Acme Corp\").\n      - mode: 'narrative' (default) | 'edges' | 'episodes' | 'all'.\n      - limit: caps edges + episodes; narrative is always max 5 entities.\n    Pair with:\n      - search_graph beforehand if entity name is uncertain.\n      - retract(target=uuid) using EPISODIC uuids surfaced by mode='episodes'.\n      - get_episode(uuid) to read the full body of any surfaced episode.\n    ",
+    "schema": {
+      "properties": {
+        "entity_name": {
+          "title": "Entity Name",
+          "type": "string"
+        },
+        "mode": {
+          "default": "narrative",
+          "title": "Mode",
+          "type": "string"
+        },
+        "limit": {
+          "default": 25,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entity_name"
+      ],
+      "type": "object",
+      "title": "get_entity_viewArguments"
+    }
+  },
+  {
+    "name": "get_episode",
+    "description": "Full content of one episode by uuid. Scoped to the caller's team.\n\n    When:\n      - Drilling into episode bodies after a uuid surfaced from get_entity_view, search_graph, or list_episode_tasks.\n      - Confirming exactly what you're about to retract.\n    Skip when:\n      - You only have the friendly `episode_name` slug \"mcp_<ts>\" \u2014 that's NOT a uuid.\n      - You want a list of episodes for an entity \u2014 use get_entity_view(name, mode='episodes').\n      - You already inspected this episode in the current session.\n    Inputs:\n      - uuid: the EPISODIC uuid (not the `episode_name` slug that add_episode returns).\n    Pair with:\n      - get_entity_view(name, mode='episodes') to find uuids first.\n      - retract(target=uuid) to roll back facts from this episode after confirming the body.\n    ",
+    "schema": {
+      "properties": {
+        "uuid": {
+          "title": "Uuid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uuid"
+      ],
+      "type": "object",
+      "title": "get_episodeArguments"
+    }
+  },
+  {
+    "name": "get_director_profile",
+    "description": "Compressed Director profile for ONE group: working-style summary + recurring visions + top cognitive patterns with reinforcing-edge examples. Scoped to the caller's team.\n\n    When:\n      - You picked a group_id (via list_groups or context) and want the user's reasoning model for it.\n      - Need a single high-signal summary before searching or recommending.\n      - Subjective query about the user within a specific group.\n    Skip when:\n      - You want the cross-group view \u2014 use get_unified_profile instead.\n      - You only need raw edges or a single entity \u2014 use search_graph / get_entity_view.\n      - You called it earlier this session for the same group_id.\n    Inputs:\n      - group_id: short label from list_groups (default \"default\").\n      - top_patterns: how many cognitive patterns to include (default 10).\n      - examples_per_pattern: reinforcing-edge examples per pattern (default 2).\n    Pair with:\n      - list_groups first if group_id is unknown.\n      - edges_by_pattern(name) to drill into any surfaced pattern.\n      - get_unified_profile for cross-group view.\n    ",
+    "schema": {
+      "properties": {
+        "group_id": {
+          "default": "default",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "top_patterns": {
+          "default": 10,
+          "title": "Top Patterns",
+          "type": "integer"
+        },
+        "examples_per_pattern": {
+          "default": 2,
+          "title": "Examples Per Pattern",
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "title": "get_director_profileArguments"
+    }
+  },
+  {
+    "name": "get_unified_profile",
+    "description": "Director profile MERGED across every group_id with `appears_in_groups` per pattern. Scoped to the caller's team.\n\n    When:\n      - User has multiple groups and you want one \"who is this person across all their work\" answer.\n      - Cross-context recommendation where group-specific framing would mislead.\n    Skip when:\n      - User has only one group \u2014 get_director_profile(group_id=X) is more focused.\n      - You want group-scoped detail \u2014 use get_director_profile.\n      - You already pulled the unified profile earlier in this session.\n    Inputs:\n      - top_patterns: how many merged patterns to include (default 15).\n      - examples_per_pattern: reinforcing-edge examples per pattern (default 1). No group_id \u2014 merges all.\n    Pair with:\n      - list_groups to see what groups got merged.\n      - get_director_profile(group_id=X) for any group you want in detail.\n      - edges_by_pattern(name) to drill into a surfaced merged pattern.\n    ",
+    "schema": {
+      "properties": {
+        "top_patterns": {
+          "default": 15,
+          "title": "Top Patterns",
+          "type": "integer"
+        },
+        "examples_per_pattern": {
+          "default": 1,
+          "title": "Examples Per Pattern",
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "title": "get_unified_profileArguments"
+    }
+  },
+  {
+    "name": "list_episode_tasks",
+    "description": "List in-flight + recent background pipeline tasks (newest first). Process-local on cogram-core; cleared on its restart.\n\n    When:\n      - Introspecting whether earlier writes' annotations have settled.\n      - Finding a task_id you lost track of.\n      - Sanity-checking pipeline health (any 'failed' tasks in the last batch?).\n    Skip when:\n      - You already have the specific task_id \u2014 call get_episode_task directly.\n      - You're not waiting on async settlement (most read paths don't need this).\n    Inputs:\n      - group_id: optional filter by group.\n      - state: '' (all) | 'running' | 'done' | 'failed' | 'cancelled'.\n      - limit: max tasks (default 50).\n    Pair with:\n      - get_episode_task(task_id, wait_seconds=N) to peek or block on a specific task.\n      - cancel_episode_task(task_id) to abort a runaway task surfaced here.\n    ",
+    "schema": {
+      "properties": {
+        "group_id": {
+          "default": "",
+          "title": "Group Id",
+          "type": "string"
+        },
+        "state": {
+          "default": "",
+          "title": "State",
+          "type": "string"
+        },
+        "limit": {
+          "default": 50,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "title": "list_episode_tasksArguments"
+    }
+  },
+  {
+    "name": "get_episode_task",
+    "description": "Inspect or block on a background pipeline task. wait_seconds=0 peeks; wait_seconds=N blocks up to N seconds for terminal state. State \u2208 running|done|failed|cancelled.\n\n    When:\n      - You just called add_episode/record_fact and need annotations settled before reading the graph (otherwise stale reads).\n      - Verifying a specific task succeeded vs failed.\n    Skip when:\n      - You don't need the annotations to be settled before your next action (purely additive writes).\n      - The task is already known-terminal from a prior call this session.\n    Inputs:\n      - task_id: returned by add_episode/record_fact in `cogram.task_id`.\n      - wait_seconds: 0 peeks; N blocks up to N seconds for terminal state (default 0).\n    Pair with:\n      - list_episode_tasks to find lost task_ids.\n      - cancel_episode_task to abort if the task is stuck or off-track.\n    ",
+    "schema": {
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "wait_seconds": {
+          "default": 0.0,
+          "title": "Wait Seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "task_id"
+      ],
+      "type": "object",
+      "title": "get_episode_taskArguments"
+    }
+  },
+  {
+    "name": "cancel_episode_task",
+    "description": "Cooperatively cancel a still-running pipeline task. Already-written annotations stay; only future steps are skipped.\n\n    When:\n      - A task is stuck, took the wrong direction, or rate-limit chains will block other writes.\n      - User retracted the source content and you want to stop downstream annotation.\n    Skip when:\n      - The task is already terminal (done/failed/cancelled) \u2014 cancel is a no-op.\n      - You actually want the pipeline to finish \u2014 let it run; it's async.\n    Inputs:\n      - task_id: live task_id (returned by add_episode/record_fact or found via list_episode_tasks).\n    Pair with:\n      - list_episode_tasks(state='running') first to confirm the task is still live.\n      - get_episode_task(task_id) afterward to confirm cancelled state.\n    ",
+    "schema": {
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id"
+      ],
+      "type": "object",
+      "title": "cancel_episode_taskArguments"
+    }
+  }
+]
