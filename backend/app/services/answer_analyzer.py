@@ -1,15 +1,15 @@
-"""Analyze candidate answers for understanding and signals.
+"""Analyze candidate answers for understanding and signals."""
 
-Future responsibility:
-- Evaluate answer quality and completeness
-- Detect uncertainty, vagueness, and potential contradictions
-- Produce structured analysis for evidence and adaptive engines
-"""
+from app.models.interview import AnswerAnalysis
+from app.services.llm_service import get_llm_service
 
 
 class AnswerAnalyzer:
-    """Placeholder for answer analysis."""
+    """Evaluates candidate answers via LLM."""
 
-    def analyze(self, question: object, answer: str) -> None:
-        """Analyze a candidate answer. Not implemented."""
-        raise NotImplementedError("AnswerAnalyzer.analyze")
+    def __init__(self):
+        self.llm = get_llm_service()
+
+    def analyze(self, question: str, answer: str, objective: str) -> AnswerAnalysis:
+        """Analyze a candidate answer against the objective."""
+        return self.llm.analyze_answer(question, answer, objective)

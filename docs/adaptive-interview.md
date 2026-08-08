@@ -4,30 +4,28 @@ This document describes the intended adaptive interview pipeline. **Not implemen
 
 ## Pipeline
 
+## Pipeline
+
 ```
-Candidate profile
-       │
-       ▼
-Interview compiler ──► Interview plan (topics, weak areas, min coverage)
-       │
-       ▼
-Candidate state (live knowledge / evidence)
-       │
-       ▼
-Question selection ◄── Adaptive engine (difficulty, depth, follow-ups)
-       │
-       ▼
-Candidate answers
-       │
-       ▼
-Answer analysis (understanding, uncertainty, contradictions)
-       │
-       ▼
-State update (evidence timeline, gaps, strengths)
-       │
-       ▼
-Next question OR final feedback
+Candidate Intelligence (Candidate + Curriculum Data)
+        │
+        ▼
+Interview Compiler (Deterministic Engine)
+        │
+        ▼
+Interview Plan (Coverage strategy, not raw questions)
+        │
+        ▼
+Future Question Generator
+        │
+        ▼
+Future Answer Analyzer
+        │
+        ▼
+Future Adaptive Controller
 ```
+
+**Note**: The compiler does not generate questions. It deterministically generates an evidence-collection strategy.
 
 ## Inputs
 

@@ -13,4 +13,7 @@ class FeedbackReport(BaseModel):
         default_factory=list,
         description="Recommended next steps aligned with curriculum",
     )
+    questions_completed: int = 0
+    curriculum_areas_assessed: int = 0
+    adaptive_follow_ups: int = 0
     # TODO: evidence citations, curriculum day references, confidence scores
