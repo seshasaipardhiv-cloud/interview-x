@@ -92,14 +92,26 @@ export default function Interview({ session, onComplete, onAbort }) {
   return (
     <div className="app-container">
       <header className="app-header">
-        <div>
-          <h2>INTERVIEW-X</h2>
-          <p style={{ fontSize: '0.9rem' }}>AI Technical Interview</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--accent-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 15px var(--accent-glow)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span>INTERVIEW-X</span>
+            <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '4px', color: 'var(--text-secondary)' }}>LIVE</span>
+          </h2>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontWeight: '500' }}>Candidate: {session.candidate.member.name}</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Progress: Question {questionsAsked} / 8+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Candidate Telemetry</div>
+            <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{session.candidate.member.name}</div>
+          </div>
+          <div style={{ height: '30px', width: '1px', background: 'var(--border-color)' }}></div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Pipeline Progress</div>
+            <div style={{ color: 'var(--accent-color)', fontWeight: '600', fontFamily: 'var(--font-display)' }}>
+              Node {questionsAsked} / 8+
+            </div>
           </div>
         </div>
       </header>
