@@ -70,3 +70,26 @@ def test_interview_lifecycle(clean_session):
             break
             
     assert turns < max_turns, "Interview did not complete within expected turns."
+
+def test_cors_preflight():
+    response = client.options(
+        "/api/interview",
+        headers={
+            "Origin": "https://interview-x-9t15.onrender.com",
+            "Access-Control-Request-Method": "POST",
+        }
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://interview-x-9t15.onrender.com"
+    assert "POST" in response.headers["access-control-allow-methods"]
+
+def test_cors_preflight_localhost():
+    response = client.options(
+        "/api/interview",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        }
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"

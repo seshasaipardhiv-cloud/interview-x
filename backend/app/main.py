@@ -16,8 +16,8 @@ app = FastAPI(
 )
 
 # Configure CORS
-origins = [settings.frontend_url]
-if settings.debug:
+origins = [url.strip() for url in settings.frontend_url.split(",") if url.strip()]
+if settings.debug and "*" not in origins:
     origins.append("*")
 
 app.add_middleware(
