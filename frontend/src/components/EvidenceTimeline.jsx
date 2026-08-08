@@ -27,29 +27,35 @@ export default function EvidenceTimeline({ currentPhase, daysCovered }) {
 
   return (
     <div className="side-panel">
-      <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-        Interview Progress
-      </h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <h3 style={{ fontSize: '0.85rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+          Assessment Vector
+        </h3>
+      </div>
       
-      <div style={{ marginBottom: '3rem' }}>
+      <div style={{ marginBottom: '3rem', paddingLeft: '0.5rem' }}>
         {phases.map((phase, idx) => (
-          <div key={phase.id} className={`checklist-item ${getPhaseClass(phase.id, currentPhaseIndex, idx)}`}>
-            <span className="icon">{getPhaseIcon(phase.id, currentPhaseIndex, idx)}</span>
-            <span>{phase.label}</span>
+          <div key={phase.id} className={`timeline-node ${getPhaseClass(phase.id, currentPhaseIndex, idx)}`}>
+            <div className="node-indicator"></div>
+            <div className="node-label">{phase.label}</div>
           </div>
         ))}
       </div>
 
-      <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-        Curriculum Coverage
-      </h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-muted)' }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <h3 style={{ fontSize: '0.85rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+          Curriculum Coverage
+        </h3>
+      </div>
       
-      <div>
-        {daysCovered.length === 0 && <div className="checklist-item">No days covered yet.</div>}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {daysCovered.length === 0 && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Awaiting telemetry...</span>}
         {daysCovered.map((day) => (
-          <div key={day} className="checklist-item completed">
-            <span className="icon">✓</span>
-            <span>Day {day}</span>
+          <div key={day} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(5, 150, 105, 0.15)', color: 'var(--success)', padding: '0.25rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500', border: '1px solid rgba(5, 150, 105, 0.3)' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Day {day}
           </div>
         ))}
       </div>

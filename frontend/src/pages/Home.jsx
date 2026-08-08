@@ -27,89 +27,80 @@ export default function Home({ onStart }) {
   };
 
   return (
-    <div className="app-main" style={{ justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
-      <div className="glass-panel" style={{ padding: '3.5rem 3rem', maxWidth: '520px', width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+    <div className="app-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', padding: '3rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: 'var(--text-primary)', color: 'var(--bg-base)', marginBottom: '1.5rem', boxShadow: '0 0 20px rgba(255,255,255,0.1)' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>INTERVIEW-X</h1>
+          <p style={{ fontSize: '0.95rem' }}>Enterprise Intelligence Platform</p>
+        </div>
         
-        {/* Subtle decorative glow inside the panel */}
-        <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', width: '200px', height: '100px', background: 'var(--accent-glow)', filter: 'blur(60px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-
-        <h1 style={{ marginBottom: '0.75rem', fontSize: '2.5rem', background: 'linear-gradient(to right, #fff, #a1a1aa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.04em' }}>INTERVIEW-X</h1>
-        <p style={{ marginBottom: '2.5rem', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>Enterprise AI Technical Interview</p>
-        
-        <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Select Candidate Profile
+        <div style={{ marginBottom: '2rem' }}>
+          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Initialize Candidate Profile
           </label>
-          <select 
-            value={selectedCandidateId} 
-            onChange={(e) => setSelectedCandidateId(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '1rem 1.25rem', 
-              borderRadius: '12px', 
-              backgroundColor: 'rgba(0, 0, 0, 0.2)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-highlight)',
-              fontSize: '1.05rem',
-              transition: 'all var(--transition-speed) ease',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--accent-color)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'var(--border-highlight)';
-              e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.1)';
-            }}
-          >
-            {candidates.map(c => (
-              <option key={c.member.id} value={c.member.id}>
-                {c.member.name} - {c.member.jobRole}
-              </option>
-            ))}
-          </select>
+          <div style={{ position: 'relative' }}>
+            <select 
+              value={selectedCandidateId} 
+              onChange={(e) => setSelectedCandidateId(e.target.value)}
+              style={{ 
+                width: '100%', 
+                padding: '1rem 1.25rem', 
+                borderRadius: 'var(--radius-sm)', 
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+                fontSize: '0.95rem',
+                fontFamily: 'var(--font-sans)',
+                transition: 'var(--transition-fast)',
+                cursor: 'pointer'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'rgba(255,255,255,0.3)';
+                e.target.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--border-color)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              {candidates.map(c => (
+                <option key={c.member.id} value={c.member.id}>
+                  {c.member.name} • {c.member.jobRole}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {selectedCandidate && (
-          <div style={{ marginBottom: '2.5rem', textAlign: 'left', background: 'rgba(255, 255, 255, 0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem', color: 'var(--text-primary)' }}>Candidate Profile</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '2.5rem', padding: '1.25rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Name</div>
-                <div style={{ fontWeight: '500' }}>{selectedCandidate.member.name}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Role</div>
-                <div style={{ fontWeight: '500' }}>{selectedCandidate.member.jobRole}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Candidate</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '500' }}>{selectedCandidate.member.name}</div>
               </div>
               <div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Experience</div>
-                <div style={{ fontWeight: '500' }}>{selectedCandidate.member.yearsExperience} Years</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Target Role</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '500' }}>{selectedCandidate.member.jobRole}</div>
               </div>
               <div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Status</div>
-                <div style={{ fontWeight: '500' }}>{selectedCandidate.member.status}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Experience</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '500' }}>{selectedCandidate.member.yearsExperience} YOE</div>
               </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-              <div style={{ fontSize: '0.9rem', color: 'var(--accent-color)', fontWeight: '600', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Interview Strategy Prepared
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {['Personalized', 'Adaptive', 'Curriculum-aware', 'Evidence-conditioned'].map(tag => (
-                  <span key={tag} style={{ background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-color)', padding: '0.25rem 0.75rem', borderRadius: '100px', fontSize: '0.8rem', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                    {tag}
-                  </span>
-                ))}
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Clearance</div>
+                <div style={{ fontSize: '0.95rem', fontWeight: '500', color: 'var(--success)' }}>VERIFIED</div>
               </div>
             </div>
           </div>
         )}
 
-        <button className="btn" onClick={handleStart} style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}>
-          Initialize Interview Session
+        <button className="btn" onClick={handleStart} style={{ width: '100%', height: '3rem' }}>
+          Launch Session
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </div>
     </div>

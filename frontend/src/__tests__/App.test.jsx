@@ -29,10 +29,10 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // 1. Candidate selection
-    expect(screen.getByText(/Select Candidate Profile/i)).toBeInTheDocument();
+    expect(screen.getByText(/Initialize Candidate Profile/i)).toBeInTheDocument();
     
     // 2. Interview start
-    const startButton = screen.getByRole('button', { name: /initialize interview session/i });
+    const startButton = screen.getByRole('button', { name: /launch session/i });
     fireEvent.click(startButton);
 
     // Initial loading state
@@ -44,7 +44,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     });
     
     // Progress update
-    expect(screen.getByText(/Progress: Question 1 \/ 8\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Question 1 \/ 8\+/i)).toBeInTheDocument();
   });
 
   it('4/5/6. Submitting an answer, displaying next response, and progress updates', async () => {
@@ -67,7 +67,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // Start
-    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
     
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
@@ -75,7 +75,7 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     const textarea = screen.getByLabelText('Candidate response textarea');
     fireEvent.change(textarea, { target: { value: 'This is my great answer' } });
     
-    const submitBtn = screen.getByRole('button', { name: /submit answer/i });
+    const submitBtn = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitBtn);
 
     // Check loading state on submit
@@ -87,8 +87,8 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     await waitFor(() => expect(screen.getByText('Second question')).toBeInTheDocument(), { timeout: 2500 }); // Wait past setTimeout in code
     
     // 6. Progress updates
-    expect(screen.getByText(/Progress: Question 2 \/ 8\+/i)).toBeInTheDocument();
-    expect(screen.getByText('Core Concept').closest('.checklist-item')).toHaveClass('active');
+    expect(screen.getByText(/Question 2 \/ 8\+/i)).toBeInTheDocument();
+    expect(screen.getByText('Core Concept').closest('.timeline-node')).toHaveClass('active');
   });
 
   it('7. Final feedback rendering', async () => {
@@ -114,17 +114,17 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     render(<App />);
     
     // Start
-    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
     // Submit answer to trigger completion
     const textarea = screen.getByLabelText('Candidate response textarea');
     fireEvent.change(textarea, { target: { value: 'Final answer' } });
-    fireEvent.click(screen.getByRole('button', { name: /submit answer/i }));
+    fireEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     // 7. Final feedback shows up after loading delay
     await waitFor(() => {
-      expect(screen.getByText('OVERALL ASSESSMENT')).toBeInTheDocument();
+      expect(screen.getByText('Executive Summary')).toBeInTheDocument();
       expect(screen.getByText('Great job!')).toBeInTheDocument();
     }, { timeout: 2000 });
   });
@@ -133,10 +133,10 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     api.postInterview.mockRejectedValueOnce(new Error('Network error'));
 
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Error:/i)).toBeInTheDocument();
+      expect(screen.getByText(/SYS_ERR:/i)).toBeInTheDocument();
       expect(screen.getByText(/Network error/i)).toBeInTheDocument();
     });
   });
@@ -151,10 +151,10 @@ describe('INTERVIEW-X Frontend End-to-End Flow', () => {
     });
 
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /initialize interview session/i }));
+    fireEvent.click(screen.getByRole('button', { name: /launch session/i }));
     await waitFor(() => expect(screen.getByText('First question')).toBeInTheDocument());
 
-    const submitBtn = screen.getByRole('button', { name: /submit answer/i });
+    const submitBtn = screen.getByRole('button', { name: /submit/i });
     const textarea = screen.getByLabelText('Candidate response textarea');
     
     // Empty value => disabled
