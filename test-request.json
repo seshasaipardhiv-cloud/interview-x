@@ -1,0 +1,20 @@
+﻿{
+  "sessionId": "production-demo-003",
+  "candidate": {
+    "member": {
+      "id": "CAND-011",
+      "name": "Mia Alvarez",
+      "jobRole": "UX Researcher",
+      "yearsExperience": 6,
+      "education": "MA Human-Computer Interaction",
+      "status": "COMPLETED"
+    },
+    "missions": [],
+    "signals": {
+      "commitDays": 9,
+      "missionsCompleted": 14,
+      "missionsFirstTry": 5
+    }
+  },
+  "message": null
+}
