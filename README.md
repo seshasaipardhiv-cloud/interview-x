@@ -4,55 +4,50 @@
 
 Technical interviews for AI engineering cohorts often rely on static question banks that ignore what candidates have actually learned, where they struggled, and how they perform under follow-up pressure. This produces interviews that feel generic, fail to surface real gaps, and offer little actionable feedback tied to a structured curriculum.
 
-## Proposed Solution
+## Solution: INTERVIEW-X
 
 INTERVIEW-X is an evidence-driven, self-adaptive technical interview agent. It compiles each candidate's learning journey (curriculum progress, mission outcomes, and behavioral signals) into a personalized interview plan, maintains live knowledge/evidence state during the conversation, dynamically selects and adapts questions with context-aware follow-ups, and generates evidence-backed final feedback with strengths, gaps, and next steps.
 
-## Current Development Stage
+**Judge Mode**: The UI is optimized for demonstrations and evaluations. It allows instant loading of specific candidate profiles and beautifully tracks the backend's hidden adaptive decisions—like follow-ups, curriculum coverage, and phase advancements—in real time.
 
-**Scaffold only.** The repository contains modular backend and frontend structure, placeholder services, Pydantic models, and documentation. The adaptive interview engine, curriculum integration, and full API contract are not implemented yet.
+## Architecture
 
-## Planned Architecture
-
-```
-Candidate profile + learning history
+```text
+Candidate Profile + Learning History
         │
         ▼
-Interview compiler ──► Session state (sessionId)
+Interview Compiler ──► Session State (In-Memory)
         │
         ▼
-Question engine ◄──► Adaptive engine
+Question Engine ◄──► Adaptive Engine (Follow-Ups/Advance/Finish)
         │
         ▼
-Answer analyzer ──► Evidence engine ──► Feedback engine
+Answer Analyzer ──► Evidence Engine ──► Feedback Engine
         │
         ▼
 POST /api/interview (multi-turn, min 8 questions, 4+ curriculum days)
 ```
 
-- **Backend:** Python, FastAPI, Pydantic, modular services under `backend/app/services/`
-- **Frontend:** React + Vite, interview UI components under `frontend/src/`
-- **State:** In-memory session store (placeholder in `core/state.py`); no external infra at scaffold stage
+- **Backend:** Python, FastAPI, Pydantic, structured logging, safe exception handling.
+- **Frontend:** React + Vite, responsive sleek glassmorphism UI.
+- **State:** In-memory session store (suitable for hackathon/demonstration deployment).
 
-## Local Setup (Placeholder)
+## Setup & Running
 
-### Backend
+### Local Development
 
+**Backend (Python 3.11+)**:
 ```bash
 cd backend
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
+.venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env with your settings
 uvicorn app.main:app --reload --port 8000
 ```
-
 Health check: `GET http://localhost:8000/health`
 
-### Frontend
-
+**Frontend (Node 20+)**:
 ```bash
 cd frontend
 npm install
@@ -60,15 +55,29 @@ cp .env.example .env
 npm run dev
 ```
 
-### Docker (optional)
+### Production / Docker Setup
+
+You can easily launch the entire stack using Docker Compose:
 
 ```bash
 docker compose up --build
 ```
+- Frontend will be available at: `http://localhost:5173`
+- Backend API is running on: `http://localhost:8000`
+
+## Demo Instructions
+
+1. Start the application (via local dev servers or Docker).
+2. Open the frontend in your browser.
+3. You will see the **Judge Mode** entry screen.
+4. Select one of the three real candidates (e.g., Sarah Johnson).
+5. A Candidate Preview card will appear, showing their experience and the dynamic strategy prepared.
+6. Click **Initialize Interview Session**.
+7. Chat with the AI! Watch the right panel dynamically update as the backend adapts to your answers.
+8. Finish the interview to see the detailed Feedback Report and metrics.
 
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [Adaptive Interview Concept](docs/adaptive-interview.md)
-- [Demo Script (placeholder)](docs/demo-script.md)
-- [AI Usage Log](AI_USAGE_LOG.md)
+- [Deployment Guide](docs/deployment.md)

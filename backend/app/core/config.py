@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     app_name: str = "INTERVIEW-X"
     app_version: str = "0.1.0"
     debug: bool = False
+    frontend_url: str = "http://localhost:5173"
 
     # LLM provider settings (placeholders — configure via .env when implemented)
     llm_api_key: str | None = None
